@@ -1,0 +1,199 @@
+Lab3 JavaFX
+
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+import java.util.Optional;
+import javafx.geometry.Insets;
+import javafx.application.Application;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextInputDialog;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+
+/**
+ *
+ * @author dbusse
+ */
+public class DisplayStudent extends Application {
+    private int numStu = 0;
+    private String databaseName = "";
+    
+    @Override
+    public void start(Stage primaryStage) {
+        //
+        // Create a Scene using a VBox
+        
+        Scene scene = new Scene(new VBox(), 400, 260);
+ 
+
+        //
+        // Use two BorderPanes to create the layout
+        // 
+        // pane is the main one, we'll put the TextArea in the "Top"
+        // the second pane, pane2 will go in the "Bottom".
+        //
+        // pane2 is used to layout the two labels.  The "Connected" 
+        // label goes in the "Left" part and the "Number of Students"
+        // label goes in the "right"part.
+        //
+        BorderPane pane = new BorderPane();
+        BorderPane pane2 = new BorderPane();
+        pane.setPadding(new Insets(10, 10, 10, 10));
+        pane2.setPadding(new Insets(20, 10, 10, 10));
+        // T R B L
+        
+        //
+        // Set up test data in the components
+        Label cLabel = new Label("Not Connected");
+        Label nsLabel = new Label("Number of Students = " + numStu);
+        TextArea tArea = new TextArea();
+     
+        pane2.setLeft(cLabel);
+        pane2.setRight(nsLabel);
+        
+        pane.setTop(tArea);
+        pane.setBottom(pane2);
+        
+        //
+        // Create the MenuBar and the menus
+         MenuBar menuBar = new MenuBar();
+ 
+        // --- Menu File
+        Menu menuFile = new Menu("File");
+        MenuItem connect = new MenuItem("Connect");
+        connect.setOnAction((ActionEvent t) -> {
+            databaseName = getDatabaseName();
+            if (!databaseName.equals("")) cLabel.setText("Connected to " + databaseName);
+        }); 
+        MenuItem close = new MenuItem("Close");
+        close.setOnAction((ActionEvent t) -> {
+            if (userConfirmsClose()){
+                databaseName = "";
+                cLabel.setText("No Connection");
+            }
+        });
+        MenuItem exit = new MenuItem("Exit");
+        exit.setOnAction((ActionEvent t) -> {
+            if (userConfirmsExit()) System.exit(0);
+        });
+        menuFile.getItems().addAll(connect, close, exit);
+        
+        // --- Menu Edit
+        Menu menuEdit = new Menu("Edit");
+        MenuItem search = new MenuItem("Search");
+        search.setOnAction((ActionEvent t) -> {
+            if(databaseName.equals("")){
+                displayDatabaseNameError();
+            }else{
+                String searchString = getSearchStringFromUser();
+                tArea.appendText("Mary Smith, CIST\012");
+                tArea.appendText("Tom Jones, English\012");
+                numStu = 2;
+                nsLabel.setText("Number of Students = " + numStu);
+            }
+        });
+        MenuItem clear = new MenuItem("Clear");
+        clear.setOnAction((ActionEvent t) -> {
+            tArea.clear();
+            numStu = 0;
+            nsLabel.setText("Number of Students = " + numStu);
+        });
+        menuEdit.getItems().addAll(search, clear);
+        
+        menuBar.getMenus().addAll(menuFile, menuEdit);
+        //
+        // Add everything to the scene
+        ((VBox) scene.getRoot()).getChildren().addAll(menuBar, pane);
+        //((VBox) scene.getRoot()).getChildren().addAll(pane);
+        
+        primaryStage.setTitle("Display Student");
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {
+        launch(args);
+    }
+    String getDatabaseName() {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Text Input Dialog");
+        dialog.setHeaderText("Database Input Dialog");
+        dialog.setContentText("Please enter the database name:");
+        // Traditional way to get the response value.
+        Optional<String> result = dialog.showAndWait();
+        if (result.isPresent()){
+           return result.get();
+        }else{
+           return "";
+        } //end if
+    }
+    
+    boolean userConfirmsClose(){
+        boolean isConfirmed = false;
+        Alert alert = new Alert(AlertType.CONFIRMATION);
+        alert.setTitle("Confirmation Dialog");
+        alert.setHeaderText("Close the database connection");
+        alert.setContentText("Are you ok with this?");
+
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.get() == ButtonType.OK){
+            isConfirmed = true;
+        }
+        return isConfirmed;
+    }
+    
+    boolean userConfirmsExit(){
+        boolean isConfirmed = false;
+        Alert alert = new Alert(AlertType.CONFIRMATION);
+        alert.setTitle("Confirmation Dialog");
+        alert.setHeaderText("Exit the program");
+        alert.setContentText("Are you ok with this?");
+
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.get() == ButtonType.OK){
+            isConfirmed = true;
+        }
+        return isConfirmed;
+    }
+    
+    void displayDatabaseNameError(){
+        Alert alert = new Alert(AlertType.ERROR);
+        alert.setTitle("Error Dialog");
+        alert.setHeaderText("No Database Connection Error");
+        alert.setContentText("Please connect to a database first.");
+        alert.showAndWait();
+    }
+    
+    String getSearchStringFromUser(){
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Text Input Dialog");
+        dialog.setHeaderText("User ID Input Dialog");
+        dialog.setContentText("Please enter a user id or partial followed by %");
+        // Traditional way to get the response value.
+        Optional<String> result = dialog.showAndWait();
+        if (result.isPresent()){
+           return result.get();
+        }else{
+           return "";
+        } //end if
+    }
+}
